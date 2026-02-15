@@ -10,10 +10,8 @@ from fastapi import HTTPException
 
 app = FastAPI()
 
-# テーブル作成（初回のみ）
 models.Base.metadata.create_all(bind=engine)
 
-# DBセッション取得用
 def get_db():
     db = SessionLocal()
     try:
@@ -55,15 +53,10 @@ def update_todo(todo_id: int, todo: TodoUpdate, db: Session = Depends(get_db)):
 
 @app.delete("/todos/{todo_id}", status_code=204)
 def delete_todo(todo_id: int, db: Session = Depends(get_db)):
-# ① データを検索
     todo = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
-# ② 見つからなければ404
     if todo is None:
         raise HTTPException(status_code=404, detail="Todoが見つかりません")
-# ③ 削除
     db.delete(todo)
-# ④ DBに確定保存
     db.commit()
-
     return
 
